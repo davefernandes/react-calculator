@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Calculator</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    
+    <!-- Don't use this in production: -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div class="container" id="root">
+        
+    </div>
+    <script type="text/babel">
+
+        const numbersArray = ['0','1','2','3','4','5','6','7','8','9'];
+        const symbolsArray = ['+','-','*','/'];
+        const endsWithOperator = /[x+‑/]$/;
+
+        class Calculator extends React.Component {
+            constructor (props) {
+                super(props);
+                this.state = {
+                    result: '',
+                    display: '0',
+                    previousSymbol: '0'
+                }
+                this.handleClicks = this.handleClicks.bind(this);
+            }
+            handleClicks(e) {
+                let symbolClicked = e.target.textContent.toString();
+                if( symbolClicked == 'AC' ) {
+                    this.setState({
+                        result: '',
+                        display: '0',
+                        previousSymbol: '0'
+                    });
+                } else {
+                    
+                    if( numbersArray.includes(symbolClicked) ) { 
+
+                        if( this.state.previousSymbol == '0' && this.state.display.length == 1 ) {
+                            if( symbolClicked == '0' ) { } else {
+                                this.setState({
+                                    result: '',
+                                    display: symbolClicked,
+                                    previousSymbol: symbolClicked
+                                });
+                            } 
+                        } else if( symbolsArray.includes(this.state.previousSymbol) ) {
+                            this.setState({
+                                display: (symbolClicked).toString(),
+                                previousSymbol: symbolClicked
+                            });
+                        } else if( this.state.display == '0' ) {
+                            
+                        } else {
+                            this.setState({
+                                display: (this.state.display + symbolClicked).toString(),
+                                previousSymbol: symbolClicked
+                            });
+                        } 
+
+                    } else if( symbolClicked == '-' && symbolsArray.includes(this.state.previousSymbol) && this.state.previousSymbol != '=' ) {
+                        
+                        if( this.state.previousSymbol == '-' ) { } else {
+                            this.setState({
+                                result: this.state.result + symbolClicked,
+                                previousSymbol: symbolClicked
+                            });
+                        }
+
+                    } else if( symbolsArray.includes(symbolClicked) ) { 
+
+                        if( numbersArray.includes(this.state.previousSymbol) ) { 
+                            this.setState({
+                                result: (this.state.result == '') ? this.state.display + symbolClicked : this.state.result + this.state.display + symbolClicked,
+                                previousSymbol: symbolClicked
+                            });
+                        } else if( this.state.previousSymbol == '=' ) { 
+                            this.setState({
+                                result: this.state.display + symbolClicked,
+                                previousSymbol: symbolClicked
+                            });
+                        } else if(symbolsArray.includes(this.state.previousSymbol)) {
+                            let newResult = this.state.result.slice(0,-1);
+
+                            if( this.state.previousSymbol == '-' && symbolsArray.includes(newResult.slice(-1)) ) {
+                                newResult = newResult.slice(0,-1);
+                            }
+
+                            this.setState({
+                                result: newResult + symbolClicked,
+                                previousSymbol: symbolClicked
+                            });
+                            
+                        }
+
+                    } else if( symbolClicked == '=' ) { 
+                        
+                        if( this.state.previousSymbol == '=' || this.state.result == '' ) { } else {
+                            let expression = (this.state.result + this.state.display + symbolClicked).slice(0,-1);
+                            let finalValue = parseFloat(eval(expression).toPrecision(4));
+                            
+                            this.setState({
+                                result: (this.state.result == '') ? '' : this.state.result + this.state.display + symbolClicked,
+                                display: finalValue,
+                                previousSymbol: symbolClicked
+                            });
+                        }
+                    } else if( symbolClicked == '.' ) { 
+                        
+                        if( this.state.previousSymbol == '=' || symbolsArray.includes(this.state.previousSymbol) || this.state.display.indexOf('.') != -1  ) { 
+
+                        } else {
+                            this.setState({
+                                display: (this.state.display + symbolClicked).toString(),
+                                previousSymbol: symbolClicked
+                            });
+                        }
+                    }
+                    
+
+                }
+            }
+            render() {
+                return (
+                    <div id="calculator">
+                        <Result result={this.state.result} />
+                        <Display display={this.state.display} />
+                        <Buttons calc={this.handleClicks} />
+                    </div>
+                );
+            }
+        }
+
+        class Buttons extends React.Component {
+            render() {
+                return (
+                    <div id="buttons">
+                        <div id="clear" className="btn-3" onClick={this.props.calc}>AC</div>
+                        <div id="divide" className="btn" onClick={this.props.calc}>/</div>
+                        
+                        <div id="seven" className="btn" onClick={this.props.calc}>7</div>
+                        <div id="eight" className="btn" onClick={this.props.calc}>8</div>
+                        <div id="nine" className="btn" onClick={this.props.calc}>9</div>
+                        <div id="multiply" className="btn" onClick={this.props.calc}>*</div>
+                        
+                        <div id="four" className="btn" onClick={this.props.calc}>4</div>
+                        <div id="five" className="btn" onClick={this.props.calc}>5</div>
+                        <div id="six" className="btn" onClick={this.props.calc}>6</div>
+                        <div id="subtract" className="btn" onClick={this.props.calc}>-</div>
+                        
+                        <div id="one" className="btn" onClick={this.props.calc}>1</div>
+                        <div id="two" className="btn" onClick={this.props.calc}>2</div>
+                        <div id="three" className="btn" onClick={this.props.calc}>3</div>
+                        <div id="add" className="btn" onClick={this.props.calc}>+</div>
+                        
+                        <div id="zero" className="btn-2" onClick={this.props.calc}>0</div>
+                        <div id="decimal" className="btn" onClick={this.props.calc}>.</div>
+                        <div id="equals" className="btn red" onClick={this.props.calc}>=</div>
+                    </div>
+                );
+            }
+        }
+
+        class Result extends React.Component {
+            render() {
+              return (
+                <div id="div_result">
+                    {this.props.result}
+                </div>
+              );
+            }
+          }
+          
+          class Display extends React.Component {
+            render() {
+              return (
+                <div id="display">
+                    {this.props.display}
+                </div>
+              );
+            }
+          }
+
+        ReactDOM.render(<Calculator />,document.getElementById('root'));
+        
+    </script>
+</body>
+</html>
